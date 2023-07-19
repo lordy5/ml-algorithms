@@ -8,14 +8,16 @@ class Tree:
 
         root_node = Node()
 
-        build_tree()
+        build_tree(root)
     
-    def build_tree():
+    def build_tree(node):
         if depth > max_depth or samples < min_samples:
             # Becomes leaf node
             print("hello")
         else:
             split_feature = choose_split_feature()
+            # Get data from current node, split, and create child nodes
+
 
 
     # Returns column number for best feature to split on
