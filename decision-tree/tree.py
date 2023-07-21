@@ -15,8 +15,8 @@ class Tree:
             # Becomes leaf node
             print("hello")
         else:
-            split_feature = choose_split_feature()
-            # Get data from current node, split, and create child nodes
+            #split data and create child nodes
+            node.split()
 
 
 
@@ -26,10 +26,20 @@ class Tree:
     
 class Node:
     def __init__(self, features, labels, left=None, right=None):
-        self.features = features
+        self.feature = features
         self.labels = labels
         self.left = left
         self.right = right
+
+    def split():
+        split_feature = choose_split_feature()
+        
+
+    # Returns column number for best feature to split on
+    def choose_split_feature():
+        return 1
+
+        
     
 
 
