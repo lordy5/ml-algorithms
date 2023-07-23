@@ -19,6 +19,8 @@ class Tree:
             #split data and create child nodes
             left_node, right_node = node.split()
             # figure out the recursion for this
+            self.build_tree(left_node)
+            self.build_tree(right_node)
 
 
 
