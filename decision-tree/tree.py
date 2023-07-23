@@ -6,38 +6,54 @@ class Tree:
         self.max_depth = max_depth
         self.min_samples = min_samples
 
-        root_node = Node()
+        self.depth = 0
+        self.samples = 0
 
-        build_tree(root)
+        root = Node()
     
-    def build_tree(node):
-        if depth > max_depth or samples < min_samples:
+    def build_tree(self, node):
+        if self.depth > self.max_depth or self.samples < self.min_samples:
             # Becomes leaf node
             print("hello")
         else:
             #split data and create child nodes
-            node.split()
+            left_node, right_node = node.split()
+            # figure out the recursion for this
 
 
 
     # Returns column number for best feature to split on
-    def choose_split_feature():
+    def choose_split_feature(self):
         return 1
     
 class Node:
     def __init__(self, features, labels, left=None, right=None):
-        self.feature = features
+        self.features = features
         self.labels = labels
         self.left = left
         self.right = right
 
-    def split():
-        split_feature = choose_split_feature()
-        
+    # splits data, returns resulting left and right child nodes
+    def split(self):
+        split_row = self.get_split_row()
+        # Split the features and labels
+        features_left = self.features[:(split_row + 1), :]
+        features_right = self.features[(split_row + 1):, :]
+        labels_left = self.labels[:(split_row + 1), :]
+        labels_right = self.labels[:(split_row + 1), :]
 
-    # Returns column number for best feature to split on
-    def choose_split_feature():
-        return 1
+        left_child = Node(features_left, labels_left)
+        right_child = Node(features_right, labels_right)
+        
+        return left_child, right_child
+
+
+
+    # Returns row to split data at
+    # Finds best feature and threshold to split at, and returns corresponding row
+    # that splits at that threshold value
+    def get_split_row(self):
+        return 1, 1
 
         
     
