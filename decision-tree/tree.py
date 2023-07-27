@@ -7,10 +7,10 @@ class Tree:
         self.max_depth = max_depth
         self.min_samples = min_samples
 
-        self.root = Node(0)
+        self.root = Node(0, X_train, y_train)
     
     def build_tree(self, node):
-        if self.root.depth > self.max_depth or self.root.samples < self.min_samples:
+        if node.depth > self.max_depth or node.samples < self.min_samples:
             '''Criteria for splitting is no longer met, so create a leaf node in the tree.
             To do this, we find the majority class label in the node's data, and assign that
             label to the node.'''
@@ -19,8 +19,8 @@ class Tree:
             #split data and create child nodes
             left_node, right_node = node.split()
             # figure out the recursion for this
-            node.build_tree(left_node)
-            node.build_tree(right_node)
+            self.build_tree(left_node)
+            self.build_tree(right_node)
 
 
 
@@ -29,11 +29,11 @@ class Tree:
         return 1
     
 class Node:
-    def __init__(self, depth, features, labels, left=None, right=None):
+    def __init__(self, depth, features, labels):
         self.features = features
         self.labels = labels
-        self.left = left
-        self.right = right
+        self.left = None
+        self.right = None
 
         self.depth = depth
         self.samples = np.shape(features)[0]
@@ -66,7 +66,14 @@ class Node:
     # Finds best feature and threshold to split at, and returns corresponding row
     # that splits at that threshold value
     def get_split_row(self):
-        return 1, 1
+        # Use Gini impurity to determine the feature to split at
+        
+        '''Calculate Gini impurity at the node: 1 - sum(p_i^2) for 1 <= i <= k, where there
+        are k classes and p_i is the probability of a sample belonging to class i at the node.'''
+
+        
+
+        return 1
 
         
     
