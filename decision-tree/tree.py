@@ -73,7 +73,7 @@ class Node:
         
         # Calculate impurity of the node
         summation = 0
-        for k in range(self.labels):
+        for k in range(np.shape(self.labels)[1]):
             summation += pow((np.count_nonzero(k, axis=0) / np.shape(self.labels)[0]), 2)
         impurity = 1 - summation
 
