@@ -70,10 +70,52 @@ class Node:
         
         '''Calculate Gini impurity at the node: 1 - sum(p_i^2) for 1 <= i <= k, where there
         are k classes and p_i is the probability of a sample belonging to class i at the node.'''
-
         
+        # Calculate impurity of the node
+        summation = 0
+        for k in range(self.labels):
+            summation += pow((np.count_nonzero(k, axis=0) / np.shape(self.labels)[0]), 2)
+        impurity = 1 - summation
 
-        return 1
+        # Store gini gain of each split: tuple (feature, threshold) is key, gini value is the value
+        gini_gains = {}
+
+        # Go through each feature
+        for i in range(self.features):
+            # Go through all possible splits, determining gini impurities of the left and right
+            # child nodes that result from each split possibility
+            for j in range(np.shape(self.features)[0]):
+                features_left = self.features[:(j + 1), :]
+                features_right = self.features[(j + 1):, :]
+                labels_left = self.labels[:(j + 1), :]
+                labels_right = self.labels[:(j + 1), :]
+
+                # Calculate impurities
+                left_summation = 0
+                for k in range(labels_left):
+                    # each term in summation is the square of the proportion of data points that are of 
+                    # the current label's class
+                    num_left_datapoints = np.shape(labels_left)[0]
+                    left_summation += pow((np.count_nonzero(k, axis=0) / num_left_datapoints), 2)
+
+                left_impurity = 1 - left_summation
+                
+                right_summation = 0
+                for k in range(labels_right):
+                    num_right_datapoints = np.shape(labels_right)[0]
+                    right_summation += pow((np.count_nonzero(k, axis=0) / num_right_datapoints), 2)
+
+                right_impurity = 1 - right_summation
+
+                # Calculate gini gain, difference of the impurity of parent and 
+                # weighted sum of impurities of the left and right children
+                gini_gain = impurity - (num_left_datapoints * left_impurity + num_right_datapoints * right_impurity)
+                gini_gains[(i, j)] = gini_gain
+
+        # Find the highest gini gain, and return corresponding data point row to split at
+        best_split = max(gini_gains, key=gini_gains.get)
+
+        return best_split[1]
 
         
     
