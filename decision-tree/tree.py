@@ -22,6 +22,10 @@ class Tree:
             self.build_tree(left_node)
             self.build_tree(right_node)
 
+    # Calls the recursive predict function to predict the label for this datapoint
+    def make_prediction(self, x):
+        self.root.predict(x)
+
 
 
     # Returns column number for best feature to split on
@@ -37,6 +41,8 @@ class Node:
 
         self.depth = depth
         self.samples = np.shape(features)[0]
+        self.split_feature = None
+        self.leaf_label = None
 
     # splits data, returns resulting left and right child nodes
     def split(self):
@@ -115,7 +121,18 @@ class Node:
         # Find the highest gini gain, and return corresponding data point row to split at
         best_split = max(gini_gains, key=gini_gains.get)
 
+        self.split_feature = best_split[0]
+
         return best_split[1]
+    
+    # Traverse the tree until we get to a leaf, then the predicted class is just the leaf's label
+    def predict(self, x):
+        if self.is_leaf:
+            return self.leaf_label
+        elif x[self.split_feature] <= self.left[self.split_feature]:
+            return self.left.predict(x)
+        else:
+            return self.right.predict(x)
 
         
     
