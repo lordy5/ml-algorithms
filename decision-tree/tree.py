@@ -24,7 +24,7 @@ class Tree:
 
     # Calls the recursive predict function to predict the label for this datapoint
     def make_prediction(self, x):
-        self.root.predict(x)
+        return self.root.predict(x)
 
 
 
@@ -43,6 +43,7 @@ class Node:
         self.samples = np.shape(features)[0]
         self.split_feature = None
         self.leaf_label = None
+        self.is_leaf = False
 
     # splits data, returns resulting left and right child nodes
     def split(self):
@@ -55,6 +56,8 @@ class Node:
 
         left_child = Node(self.depth + 1, features_left, labels_left)
         right_child = Node(self.depth + 1, features_right, labels_right)
+
+        self.left, self.right = left_child, right_child
         
         return left_child, right_child
     
@@ -129,7 +132,7 @@ class Node:
     def predict(self, x):
         if self.is_leaf:
             return self.leaf_label
-        elif x[self.split_feature] <= self.left[self.split_feature]:
+        elif x[0, self.split_feature] <= self.right.features[0, self.split_feature]:
             return self.left.predict(x)
         else:
             return self.right.predict(x)
