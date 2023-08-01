@@ -81,7 +81,7 @@ class Node:
         gini_gains = {}
 
         # Go through each feature
-        for i in range(self.features):
+        for i in range(np.shape(self.features)[1]):
             # Go through all possible splits, determining gini impurities of the left and right
             # child nodes that result from each split possibility
             for j in range(np.shape(self.features)[0]):
@@ -92,7 +92,7 @@ class Node:
 
                 # Calculate impurities
                 left_summation = 0
-                for k in range(labels_left):
+                for k in range(np.shape(labels_left)[1]):
                     # each term in summation is the square of the proportion of data points that are of 
                     # the current label's class
                     num_left_datapoints = np.shape(labels_left)[0]
@@ -101,7 +101,7 @@ class Node:
                 left_impurity = 1 - left_summation
                 
                 right_summation = 0
-                for k in range(labels_right):
+                for k in range(np.shape(labels_right)[1]):
                     num_right_datapoints = np.shape(labels_right)[0]
                     right_summation += pow((np.count_nonzero(k, axis=0) / num_right_datapoints), 2)
 
