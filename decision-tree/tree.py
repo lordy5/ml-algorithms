@@ -29,8 +29,8 @@ class Tree:
 
 
     # Returns column number for best feature to split on
-    def choose_split_feature(self):
-        return 1
+    #def choose_split_feature(self):
+     #   return 1
     
 class Node:
     def __init__(self, depth, features, labels):
@@ -69,6 +69,16 @@ class Node:
         self.leaf_label = np.argmax(nonzero_counts)
         self.is_leaf = True
 
+    def gini_impurity(self, labels):
+        num_labels = np.shape(labels)[1]
+        num_samples = np.shape(labels)[0]
+        sum = 0
+
+        for label in range(num_labels):
+            sum += (np.count_nonzero(labels[:, label]) / num_samples)**2
+        
+        return 1 - sum
+
 
 
     # Returns row to split data at
@@ -80,59 +90,44 @@ class Node:
         '''Calculate Gini impurity at the node: 1 - sum(p_i^2) for 1 <= i <= k, where there
         are k classes and p_i is the probability of a sample belonging to class i at the node.'''
         
-        # Calculate impurity of the node
-        summation = 0
-        for k in range(np.shape(self.labels)[1]):
-            summation += pow((np.count_nonzero(k, axis=0) / np.shape(self.labels)[0]), 2)
-        impurity = 1 - summation
+        total_samples = np.shape(self.features)[0]
+        num_features = np.shape(self.features)[1]
+        best_gain = 0
+        best_feature = None
+        best_row = None
 
-        # Store gini gain of each split: tuple (feature, threshold) is key, gini value is the value
-        gini_gains = {}
+        for feature in range(num_features):
 
-        # Go through each feature
-        for i in range(np.shape(self.features)[1]):
-            # Go through all possible splits, determining gini impurities of the left and right
-            # child nodes that result from each split possibility
-            for j in range(np.shape(self.features)[0]):
-                features_left = self.features[:(j + 1), :]
-                features_right = self.features[(j + 1):, :]
-                labels_left = self.labels[:(j + 1), :]
-                labels_right = self.labels[:(j + 1), :]
+            impurity = self.gini_impurity(self.labels)
 
-                # Calculate impurities
-                left_summation = 0
-                for k in range(np.shape(labels_left)[1]):
-                    # each term in summation is the square of the proportion of data points that are of 
-                    # the current label's class
-                    num_left_datapoints = np.shape(labels_left)[0]
-                    left_summation += pow((np.count_nonzero(k, axis=0) / num_left_datapoints), 2)
+            for row in range(total_samples):
+                left_labels = self.labels[:(row + 1)]
+                right_labels = self.labels[(row + 1):]
 
-                left_impurity = 1 - left_summation
-                
-                right_summation = 0
-                for k in range(np.shape(labels_right)[1]):
-                    num_right_datapoints = np.shape(labels_right)[0]
-                    right_summation += pow((np.count_nonzero(k, axis=0) / num_right_datapoints), 2)
+                num_left_datapoints = np.shape(left_labels)[0]
+                num_right_datapoints = np.shape(right_labels)[0]
 
-                right_impurity = 1 - right_summation
+                # gini impurity for left and right children
+                left_impurity = self.gini_impurity(left_labels)
+                right_impurity = self.gini_impurity(right_labels)
+                gini_gain = impurity - left_impurity * num_left_datapoints - right_impurity * num_right_datapoints
 
-                # Calculate gini gain, difference of the impurity of parent and 
-                # weighted sum of impurities of the left and right children
-                gini_gain = impurity - (num_left_datapoints * left_impurity + num_right_datapoints * right_impurity)
-                gini_gains[(i, j)] = gini_gain
+                # Check if this gain is better than previous best
+                if gini_gain > best_gain:
+                    best_gain = gini_gain
+                    best_feature = feature
+                    best_row = row
 
-        # Find the highest gini gain, and return corresponding data point row to split at
-        best_split = max(gini_gains, key=gini_gains.get)
+        self.split_feature = best_feature
+        return best_row
 
-        self.split_feature = best_split[0]
-
-        return best_split[1]
-    
     # Traverse the tree until we get to a leaf, then the predicted class is just the leaf's label
     def predict(self, x):
         if self.is_leaf:
+            #print(self.leaf_label)
             return self.leaf_label
-        elif x[0, self.split_feature] <= self.right.features[0, self.split_feature]:
+        elif x[self.split_feature] <= self.right.features[0, self.split_feature]:
+            print(self.split_feature)
             return self.left.predict(x)
         else:
             return self.right.predict(x)
