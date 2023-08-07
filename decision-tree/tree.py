@@ -29,6 +29,17 @@ class Tree:
     # Calls the recursive predict function to predict the label for this datapoint
     def make_prediction(self, x):
         return self.root.predict(x)
+    
+    # Prints percentage of correct classifications to total classifications
+    def check_accuracy(self, X, Y):
+        correct_classifications = 0
+        total_classifications = X.shape[0]
+
+        for sample, label in zip(X, Y):
+            if self.make_prediction(sample) == np.argmax(label):
+                correct_classifications += 1
+
+        print("Percentage of correct classifications: " + str(correct_classifications / total_classifications * 100) + "%")
  
 class Node:
     def __init__(self, depth, features, labels):
