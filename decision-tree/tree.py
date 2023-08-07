@@ -47,19 +47,8 @@ class Node:
 
     # splits data, returns resulting left and right child nodes
     def split(self):
-        split_row = self.get_split_row()
-        # Split the features and labels
-        features_left = self.features[:(split_row + 1), :]
-        features_right = self.features[(split_row + 1):, :]
-        labels_left = self.labels[:(split_row + 1), :]
-        labels_right = self.labels[:(split_row + 1), :]
-
-        left_child = Node(self.depth + 1, features_left, labels_left)
-        right_child = Node(self.depth + 1, features_right, labels_right)
-
-        self.left, self.right = left_child, right_child
-        
-        return left_child, right_child
+        self.left, self.right = self.find_and_split()        
+        return self.left, self.right
     
     # If node is a leaf, find and set the class
     def set_class(self):
@@ -81,28 +70,30 @@ class Node:
 
 
 
-    # Returns row to split data at
-    # Finds best feature and threshold to split at, and returns corresponding row
-    # that splits at that threshold value
-    def get_split_row(self):
-        # Use Gini impurity to determine the feature to split at
-        
-        '''Calculate Gini impurity at the node: 1 - sum(p_i^2) for 1 <= i <= k, where there
-        are k classes and p_i is the probability of a sample belonging to class i at the node.'''
-        
+    # Finds best feature and threshold to split at, returns the threshold value
+    def find_and_split(self):        
         total_samples = np.shape(self.features)[0]
         num_features = np.shape(self.features)[1]
         best_gain = 0
         best_feature = None
-        best_row = None
+        threshold = 0
+        left_child = None
+        right_child = None
 
         for feature in range(num_features):
 
             impurity = self.gini_impurity(self.labels)
 
+            # Sort labels by the current feature, to help with determining the threshold value
+            sorted_indices = np.argsort(self.features[:, feature])
+            sorted_labels = self.labels[sorted_indices]
+            sorted_features = self.features[sorted_indices]
+
             for row in range(total_samples):
-                left_labels = self.labels[:(row + 1)]
-                right_labels = self.labels[(row + 1):]
+                left_labels = sorted_labels[:(row + 1)]
+                right_labels = sorted_labels[(row + 1):]
+                left_features = sorted_features[:(row + 1)]
+                right_features = sorted_features[(row + 1):]
 
                 num_left_datapoints = np.shape(left_labels)[0]
                 num_right_datapoints = np.shape(right_labels)[0]
@@ -116,15 +107,24 @@ class Node:
                 if gini_gain > best_gain:
                     best_gain = gini_gain
                     best_feature = feature
-                    best_row = row
+                    best_right_features, best_left_features = right_features, left_features
+                    best_right_labels, best_left_labels = right_labels, left_labels
+                    #threshold = sorted_features[row]
+
+        left_child = Node(self.depth + 1, best_left_features, best_left_labels)
+        right_child = Node(self.depth + 1, best_right_features, best_right_labels)
 
         self.split_feature = best_feature
-        return best_row
+        return left_child, right_child
 
     # Traverse the tree until we get to a leaf, then the predicted class is just the leaf's label
     def predict(self, x):
+
+
+
+
+        
         if self.is_leaf:
-            #print(self.leaf_label)
             return self.leaf_label
         elif x[self.split_feature] <= self.right.features[0, self.split_feature]:
             print(self.split_feature)
