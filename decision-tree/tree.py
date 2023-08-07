@@ -18,20 +18,18 @@ class Tree:
         else:
             #split data and create child nodes
             left_node, right_node = node.split()
-            # figure out the recursion for this
+            
+            # When splitting, if a node is pure, it's left and right children are set to itself
+            # so that we can stop recursion for that branch
+            if left_node == node and right_node == node:
+                return
             self.build_tree(left_node)
             self.build_tree(right_node)
 
     # Calls the recursive predict function to predict the label for this datapoint
     def make_prediction(self, x):
         return self.root.predict(x)
-
-
-
-    # Returns column number for best feature to split on
-    #def choose_split_feature(self):
-     #   return 1
-    
+ 
 class Node:
     def __init__(self, depth, features, labels):
         self.features = features
@@ -48,7 +46,7 @@ class Node:
 
     # splits data, returns resulting left and right child nodes
     def split(self):
-        self.left, self.right = self.find_and_split()        
+        self.left, self.right = self.find_and_split()
         return self.left, self.right
     
     # If node is a leaf, find and set the class
@@ -66,10 +64,8 @@ class Node:
 
         for label in range(num_labels):
             sum += (np.count_nonzero(labels[:, label]) / num_samples)**2
-        
+
         return 1 - sum
-
-
 
     # Finds best feature and threshold to split at, returns the threshold value
     def find_and_split(self):        
@@ -77,20 +73,26 @@ class Node:
         num_features = np.shape(self.features)[1]
         best_gain = 0
         best_feature = None
+        best_left_features, best_right_features = None, None
+        best_left_labels, best_right_labels = None, None
         threshold = 0
         left_child = None
         right_child = None
 
+        impurity = self.gini_impurity(self.labels)
+
+        # If node is completely pure, it should be a leaf
+        if impurity == 0:
+            self.set_class()
+            return self, self
+
         for feature in range(num_features):
-
-            impurity = self.gini_impurity(self.labels)
-
             # Sort labels by the current feature, to help with determining the threshold value
             sorted_indices = np.argsort(self.features[:, feature])
             sorted_labels = self.labels[sorted_indices]
             sorted_features = self.features[sorted_indices]
 
-            for row in range(total_samples):
+            for row in range(total_samples - 1):
                 left_labels = sorted_labels[:(row + 1)]
                 right_labels = sorted_labels[(row + 1):]
                 left_features = sorted_features[:(row + 1)]
@@ -102,7 +104,8 @@ class Node:
                 # gini impurity for left and right children
                 left_impurity = self.gini_impurity(left_labels)
                 right_impurity = self.gini_impurity(right_labels)
-                gini_gain = impurity - left_impurity * num_left_datapoints - right_impurity * num_right_datapoints
+                gini_gain = impurity - (left_impurity * num_left_datapoints / total_samples) - \
+                    (right_impurity * num_right_datapoints / total_samples)
 
                 # Check if this gain is better than previous best
                 if gini_gain > best_gain:
@@ -110,7 +113,7 @@ class Node:
                     best_feature = feature
                     best_right_features, best_left_features = right_features, left_features
                     best_right_labels, best_left_labels = right_labels, left_labels
-                    threshold = sorted_features[row]
+                    threshold = sorted_features[row][feature]
 
         left_child = Node(self.depth + 1, best_left_features, best_left_labels)
         right_child = Node(self.depth + 1, best_right_features, best_right_labels)
@@ -120,7 +123,7 @@ class Node:
         return left_child, right_child
 
     # Traverse the tree until we get to a leaf, then the predicted class is just the leaf's label
-    def predict(self, x):        
+    def predict(self, x):
         if self.is_leaf:
             return self.leaf_label
         elif x[self.split_feature] <= self.threshold_value:
