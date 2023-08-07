@@ -44,6 +44,7 @@ class Node:
         self.split_feature = None
         self.leaf_label = None
         self.is_leaf = False
+        self.threshold_value = 0
 
     # splits data, returns resulting left and right child nodes
     def split(self):
@@ -109,25 +110,20 @@ class Node:
                     best_feature = feature
                     best_right_features, best_left_features = right_features, left_features
                     best_right_labels, best_left_labels = right_labels, left_labels
-                    #threshold = sorted_features[row]
+                    threshold = sorted_features[row]
 
         left_child = Node(self.depth + 1, best_left_features, best_left_labels)
         right_child = Node(self.depth + 1, best_right_features, best_right_labels)
+        self.threshold_value = threshold
 
         self.split_feature = best_feature
         return left_child, right_child
 
     # Traverse the tree until we get to a leaf, then the predicted class is just the leaf's label
-    def predict(self, x):
-
-
-
-
-        
+    def predict(self, x):        
         if self.is_leaf:
             return self.leaf_label
-        elif x[self.split_feature] <= self.right.features[0, self.split_feature]:
-            print(self.split_feature)
+        elif x[self.split_feature] <= self.threshold_value:
             return self.left.predict(x)
         else:
             return self.right.predict(x)
